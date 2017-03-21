@@ -1,0 +1,96 @@
+---
+title: "Statistical inference with the GSS data"
+output: 
+  html_document: 
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+---
+
+## Setup
+
+### Load packages
+
+```{r load-packages, message = FALSE}
+library(ggplot2)
+library(dplyr)
+library(statsr)
+```
+
+### Load data
+
+Make sure your data and R Markdown files are in the same directory. When loaded
+your data file will be called `gss`. Delete this note when before you submit 
+your work. 
+
+```{r load-data}
+load("gss.Rdata")
+```
+
+
+
+* * *
+
+## Part 1: Data
+Fewer than 5000 households (<10% of the US population) in the US are randomly selected to represent a cross-section of the nation, and the observations in the sample are collected through a survey. Since the samples are randomly selected and the study is observational, the results can be generalized to the US population. Given the large data size, the sample distribution can be considered normal. Hence, the independence and randmization conditions are met for the sampling.
+
+
+* * *
+
+## Part 2: Research question
+Q1: 
+a) Is a majority of people in US satisfied with their current financial situation in 2012? How does the satisfaction break down in different social class and citizenship?
+
+```{r}
+gss12 = subset(gss, gss$year == "2012")
+gss12$satfin_clean = ifelse(gss12$satfin == "Satisfied", "Satisfied", "Not Satisfied")
+table(gss12$satfin_clean)
+p_hat = 537 / length(gss12$satfin_clean)
+inference(y=satfin_clean, data=gss12, type="ci", statistic="proportion", success="Satisfied", method="theoretical")
+inference(y=satfin_clean, data=gss12, type="ht", statistic="proportion", success="Satisfied", method="theoretical", null=0.5, alternative = "less")
+
+inference(y=as.factor(satfin_clean), x=class, data=gss12, type="ht", success="Satisfied", statistic="proportion", method="theoretical", alternative="greater")
+
+gss12$uscitzn_clean = ifelse(gss12$uscitzn == "A U.S. Citizen",  "Citizen", "Non-Citizen")
+inference(y=as.factor(satfin_clean), x=uscitzn_clean, data=gss12, type="ht", success="Satisfied", statistic="proportion", method="theoretical", null=0, alternative="greater")
+```
+
+Less than majority of people in US are satisfied with their 2012 financial situation. 
+
+b) How has satisfaction in financial situation changed from 2008 to 2012?
+There is no signifiant change in satisfaction from 2008 to 2012.
+```{r}
+satfin0812 = subset(gss, gss$year == "2008" | gss$year == "2012")
+satfin0812$satfin_clean = ifelse(satfin0812$satfin == "Satisfied", "Satisfied", "Not Satisfied")
+table(satfin0812$year, satfin0812$satfin_clean)
+inference(y=as.factor(satfin_clean), x=as.factor(year), data=satfin0812, type="ht", success = "Satisfied", statistic="proportion", method="theoretical", null=0, alternative = "twosided")
+inference(y=as.factor(satfin_clean), x=as.factor(year), data=satfin0812, type="ci", success = "Satisfied", statistic="proportion", method="theoretical")
+```
+
+Satisfaction is significantly associated with social classes. US citizens are significantly more satisifed than non-citizens.
+
+Q2: Does a majority of people in US believe they live a better life than their parents? How does this proportion break down in different social class and citizenship?
+
+```{r}
+gss12$parsol_clean = ifelse((gss12$parsol == "Much Better" | gss12$parsol == "Somewhat Better"), "Better", "Not Better")
+inference(y=parsol_clean, data=gss12, type="ci", statistic="proportion", success="Better", method="theoretical")
+inference(y=parsol_clean, x=class, data=gss12, type="ht", statistic="proportion", success="Better", method="theoretical", alternative = "greater")
+inference(y=parsol_clean, x=uscitzn_clean, data=gss12, type="ht", statistic="proportion", success="Better", method="theoretical", null=0, alternative = "twosided")
+```
+
+Yes, a majority of people believe they live a better life than their parents. No significant difference between citizen and non-citizen.
+
+The US expereienced economic crisis since 2008. Studying these questions will know how people feel the impact of the crisis in their life financially.
+
+* * *
+
+## Part 3: Exploratory data analysis
+
+
+* * *
+
+## Part 4: Inference
+
+NOTE: Insert code chunks as needed by clicking on the "Insert a new code chunk" 
+button (green button with orange arrow) above. Make sure that your code is visible
+in the project you submit. Delete this note when before you submit your work.
