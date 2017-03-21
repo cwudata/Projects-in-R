@@ -1,0 +1,99 @@
+---
+title: "Modeling and prediction for movies"
+output: 
+  html_document: 
+    fig_height: 4
+    highlight: pygments
+    theme: spacelab
+---
+
+## Setup
+
+### Load packages
+
+```{r load-packages, message = FALSE}
+library(ggplot2)
+library(dplyr)
+library(statsr)
+library(GGally)
+```
+
+### Load data
+
+Make sure your data and R Markdown files are in the same directory. When loaded
+your data file will be called `movies`. Delete this note when before you submit 
+your work. 
+
+```{r load-data}
+load("movies.Rdata")
+```
+
+* * *
+
+## Part 1: Data
+The data was collected by randomly sampling 651 movies produced and released before 2016. Therefore, the analysis can be generalized to all movies produced and released before 2016.
+
+* * *
+
+## Part 2: Research question
+1) what attributes make a movie popular?
+```{r}
+movies$win <- ifelse(((movies$best_actor_win == "yes") | (movies$best_actress_win == "yes") | (movies$best_dir_win == "yes") | (movies$best_pic_win == "yes")), "yes", "no")
+pop_movies = subset(movies, select = c(2, 3, 5, 13:19, 24, 33))
+pop_movies = subset(pop_movies, select =-title_type)
+pop_movies = subset(pop_movies, select =-audience_score)
+pop_movies = subset(pop_movies, select =-best_pic_nom)
+pop_movies = subset(pop_movies, select =-win)
+pop_movies = subset(pop_movies, select =-critics_rating)
+pop_movies = subset(pop_movies, select =-imdb_rating)
+pop_movies = subset(pop_movies, select =-audience_rating)
+model = glm(top200_box ~ ., family = binomial(lin = "logit"), data = pop_movies)
+summary(model)
+ggpairs(pop_movies)
+```
+
+The Oscar winning records were summarized into one "win" entry indicating whether or not the movie has won any awards. Backward elimination on the modified data indicates genre, MPAA rating, number of votes at IMDB, and critics score on Rotten Tomatoes are associated with movie popularity. 
+The results indicate an Action & Adventure movie rated G with high number of IMDB votes and good critics scores on Rotten Tomatoes is likely to be popular.
+
+2) Is the average IMDB rating higher on popular movies?
+
+```{r}
+inference(imdb_rating, x = top200_box, data = movies, type = "ht", statistic = "mean", order = c("yes", "no"), method = "theoretical", null = 0, alternative = "greater")
+```
+The average IMDB rating is significantly higher on popular movies. However, the result should factor in the small sample size and the non-normal distribution of non-popular movies.
+
+3) Is critics score on Rotton Tomatoes correlated with IMDB rating?
+```{r}
+ggplot(data = movies, aes(x = critics_score, y = imdb_rating)) + geom_point() + stat_smooth(method = "lm")
+cor(movies$critics_score, movies$imdb_rating)
+lmodel = lm(imdb_rating ~ critics_score, data = movies)
+summary(lmodel)
+```
+
+Yes, they are positively correlated. For every 1% increase in critics score, there is 0.03 increase in IMDB rating.
+
+* * *
+
+## Part 5: Prediction
+1) Test whether the movie "Avatar" is popular.
+```{r}
+avatar =  data.frame(genre = "Action & Adventure", mpaa_rating = "PG-13", imdb_num_votes = 920646, critics_score = 83)
+predict.glm(model, newdata = avatar, type = "response")
+```
+According to the test, there is 95% chance Avatar would be popular (True).
+
+2) Predict whether "Zootopia" will be popular.
+```{r}
+zootopia =  data.frame(genre = "Animation", mpaa_rating = "PG", imdb_num_votes = 268159, critics_score = 98)
+zootopia1 =  data.frame(genre = "Action & Adventure", mpaa_rating = "PG", imdb_num_votes = 268159, critics_score = 98)
+predict.glm(model, newdata = zootopia, type = "response")
+predict.glm(model, newdata = zootopia1, type = "response")
+```
+"Zoopia" can be categorized as both animation and action&adventure. It has almost 0 and 67% chance of being popular in each category, respectively.
+
+* * *
+
+## Part 6: Conclusion
+
+A logistic regression model was built to sucessfully predict movie popularity. Although imdb rating is not included in the model, it is shown to correlate positively to movie popularity. Critics score is shown to correlate with IMDB rating. However, the sample size for non-popular movies is very small, and the distribution is not normal. This produces bias in data analysis.
+
