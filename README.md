@@ -4,8 +4,8 @@ This repository contains the projects in "Statistics with R" coursework taught b
 
 It includes areas on:
 
-Probability and data.
+- Probability and data.
 
-Inferential statistics.
+- Inferential statistics.
 
-Linear and multiple regression.
+- Linear and multiple regression.
