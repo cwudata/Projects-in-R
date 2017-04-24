@@ -4,8 +4,8 @@ This repository contains the projects in "Statistics with R" coursework taught b
 
 It includes areas on:
 
-- Probability and data.
+[Probability and data](https://github.com/cwudata/projects-in-R/blob/master/intro_data_prob_project.Rmd)
 
-- Inferential statistics.
+[Inferential statistics](https://github.com/cwudata/projects-in-R/blob/master/stat_inf_project.Rmd)
 
-- Linear and multiple regression.
+[Linear and multiple regression](https://github.com/cwudata/projects-in-R/blob/master/reg_model_project.Rmd)
